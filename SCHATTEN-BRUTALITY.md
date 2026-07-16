@@ -1,8 +1,67 @@
 # Schatten Brutality — Text Preset
 
-> Mode: **Obrak-abrik target web hasil buatan AI / production app.**
-> Trigger: `brutal mode` / `schatten brutal` / `gas full` / `jebol ini`
-> Author: Exilio 🧠 | Updated: 2026-07-16
+> **FULL VULN CHECKLIST** — ini yang harus di-test tiap target (biar gak ada yang kelewat pas "gas full"):
+
+```
+┌─ AUTH & SESSION ────────────────────────────────┐
+│ □ Open signup (Firebase/Supabase REST)          │
+│ □ Weak password policy / no rate limit          │
+│ □ JWT none-alg / weak secret (jwt-forge.py)    │
+│ □ Session fixation / token reuse               │
+│ □ Role tampering (POST role:admin)            │
+│ □ IDOR (ganti user_id / order_id di param)    │
+│ □ Privilege escalation user→admin             │
+│ □ Account takeover via email/UUID mismatch     │
+└───────────────────────────────────────────────┘
+
+┌─ INJECTION & LOGIC ────────────────────────────┐
+│ □ SQLi (error-based, blind, time-based)       │
+│ □ NoSQLi ($ne, $regex, $gt) (noqli.py)      │
+│ □ XSS (stored, reflected, DOM)               │
+│ □ Prototype pollution (__proto__ writable)     │
+│ □ dangerouslySetInnerHTML sinks                │
+│ □ eval() / Function() / setTimeout(string)     │
+│ □ Race condition / TOCTOU (race-test.py)      │
+│ □ Business logic (negative qty, double redeem) │
+│ □ Mass assignment (extra params di JSON)       │
+└───────────────────────────────────────────────┘
+
+┌─ TRANSPORT & CONFIG ────────────────────────────┐
+│ □ Open redirect (?redirect=//evil.com)         │
+│ □ SSRF (/api/proxy?url=http://169.254.169.254)│
+│ □ XXE (upload XML, parse external)            │
+│ □ Path traversal (../../etc/passwd)           │
+│ □ File upload (svg/xss, polyglot)            │
+│ □ CORS misconfig (Access-Control-Allow-Origin:*)│
+│ □ Security headers (CSP, HSTS, X-Frame)      │
+│ □ Exposed .env / .git / backup files          │
+│ □ API keys di client JS / window globals       │
+│ □ Source map (.js.map) leak                  │
+└───────────────────────────────────────────────┘
+
+┌─ ACCESS CONTROL ────────────────────────────────┐
+│ □ Admin routes client-side only guard          │
+│ □ Middleware bypass (x-middleware-subrequest) │
+│ □ Hidden endpoints (fuzz /api/*, /admin/*)   │
+│ □ GraphQL introspection enabled               │
+│ □ CVE-2025-29927 (Next.js middleware)       │
+│ □ Server actions callable directly             │
+│ □ Rate limit absence (bruteforce)             │
+│ □ Enumeration (user list, invoice IDs)        │
+└───────────────────────────────────────────────┘
+
+┌─ 3RD PARTY & SUPPLY CHAIN ─────────────────────┐
+│ □ Firebase/Supabase/Clerk config exposed      │
+│ □ Webhook no signature verify (HMAC)          │
+│ □ Payment tampering (amount override)         │
+│ □ Domain dash trap (xy.com ≠ x-y.com)        │
+│ □ Subdomain takeover (parked/unused DNS)      │
+│ □ CDN / edge cache stale (x-vercel-cache:HIT)│
+└───────────────────────────────────────────────┘
+```
+
+> Checklist ini yang bikin audit "meaty" — gak cuma 4 findings kayak phantom tadi.
+> Tiap item: test → bukti (response code / payload) → report. Yang clean tetep dilaporin (⚪ CLEAN) biar keliatan gak skip.
 
 ---
 
