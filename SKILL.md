@@ -33,6 +33,93 @@ cd skills/brutal-schatt/tools && ./install.sh
 - `~/.openclaw/workspace/.tools/hackingtool/` — Z4nzu/hackingtool cloned for additional tools (manual pick what's needed)
 
 ### Mandatory Workflow
+
+---
+
+## FULL VULN CHECKLIST (MANDATORY — run every item per target)
+
+> Ini panduan attack lengkap. Tiap item: test → bukti (response code / payload) → report.
+> Yang clean tetep dilaporin (⚪ CLEAN) biar keliatan gak skip. Jangan simplifikasi — ini yang bikin audit "meaty".
+
+```
+┌─ AUTH & SESSION ────────────────────────────────┐
+│ □ Open signup (Firebase/Supabase REST: signUp)  │
+│ □ Weak password policy / no rate limit on auth  │
+│ □ JWT alg:none / weak secret / kid injection    │
+│   (jwt-forge.py phase 5,8)                      │
+│ □ Session fixation / token reuse               │
+│ □ Role tampering (POST role:admin di session)  │
+│ □ IDOR (ganti user_id / order_id di param)    │
+│ □ Privilege escalation user→admin (upsert)     │
+│ □ Account takeover via email/UUID mismatch     │
+│ □ Password reset poisoning (Host header)       │
+│ □ Refresh token leak / long-lived JWT          │
+│ □ OAuth misconfig (redirect_uri wildcard)      │
+└───────────────────────────────────────────────┘
+
+┌─ INJECTION & LOGIC ────────────────────────────┐
+│ □ SQLi (error-based, blind, time-based)       │
+│ □ NoSQLi ($ne, $regex, $gt, $where)           │
+│   (noqli.py phase 16)                          │
+│ □ XSS (stored, reflected, DOM)               │
+│ □ Prototype pollution (__proto__ writable)     │
+│   (browser-harvest.py: {}.__proto__.x=1)       │
+│ □ dangerouslySetInnerHTML / innerHTML sinks    │
+│ □ eval() / Function() / setTimeout(string)     │
+│ □ Race condition / TOCTOU (race-test.py)      │
+│ □ Business logic (negative qty, double redeem) │
+│ □ Mass assignment (extra params di JSON body)  │
+│ □ Type juggling (PHP ==, loose compare)       │
+│ □ Template injection (SSTI: {{7*7}})          │
+└───────────────────────────────────────────────┘
+
+┌─ TRANSPORT & CONFIG ────────────────────────────┐
+│ □ Open redirect (?redirect=//evil.com)         │
+│ □ SSRF (/api/proxy?url=http://169.254.169.254)│
+│ □ XXE (upload XML, parse external entity)     │
+│ □ Path traversal (../../../../etc/passwd)     │
+│ □ File upload (svg/xss, polyglot, zip slip)   │
+│ □ CORS misconfig (Access-Control-Allow-Origin:*)│
+│ □ Security headers (CSP, HSTS, X-Frame)      │
+│ □ Exposed .env / .git / backup / source maps  │
+│ □ API keys di client JS / window globals       │
+│ □ Verb tampering (GET→POST→PUT on endpoint)   │
+│ □ HTTP request smuggling (CL/TE)              │
+│ □ Cache poisoning (X-Forwarded-Host)          │
+└───────────────────────────────────────────────┘
+
+┌─ ACCESS CONTROL ────────────────────────────────┐
+│ □ Admin routes client-side only guard          │
+│ □ Middleware bypass (x-middleware-subrequest) │
+│ □ Hidden endpoints (fuzz /api/*, /admin/*)   │
+│ □ GraphQL introspection enabled               │
+│ □ CVE-2025-29927 (Next.js middleware)       │
+│ □ Server actions callable directly             │
+│ □ Rate limit absence (bruteforce auth)        │
+│ □ Enumeration (user list, invoice IDs)        │
+│ □ Csrf token absent / fixable                 │
+│ □ Clickjacking (X-Frame-Options missing)      │
+└───────────────────────────────────────────────┘
+
+┌─ 3RD PARTY & SUPPLY CHAIN ─────────────────────┐
+│ □ Firebase/Supabase/Clerk config exposed      │
+│ □ Webhook no signature verify (HMAC missing)  │
+│ □ Payment tampering (amount override QRIS)    │
+│ □ Domain dash trap (xy.com ≠ x-y.com)        │
+│ □ Subdomain takeover (parked/unused DNS)      │
+│ □ CDN / edge cache stale (x-vercel-cache:HIT)│
+│ □ Dependency confusion (internal pkg name)    │
+│ □ Known CVE di library (jQuery, lodash, etc)  │
+│ □ Exposed admin panel (wp-admin, /admin)     │
+│ □ Cloud metadata (169.254.169.254 SSRF)       │
+└───────────────────────────────────────────────┘
+```
+
+> Checklist ini yang bikin audit "meaty" — gak cuma 4 findings. Tiap item wajib di-test.
+> Reference: OWASP Top 10 + ASVS L2 + MITRE ATT&CK. Tool mapping ada di tabel Toolchain atas.
+
+---
+
 ```bash
 # 1. Install toolchain
 ./tools/install.sh
